@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Whirlwind\Middleware\OAuth\Infrastructure\Repository;
+namespace Whirlwind\Middleware\OAuth;
 
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -10,8 +10,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriFactoryInterface;
 use Whirlwind\Domain\Validation\Exception\ValidateException;
 use Whirlwind\Infrastructure\Hydrator\UnderscoreToCamelCaseHydrator;
-use Whirlwind\Middleware\OAuth\Infrastructure\Oauth\Exception\TokenInfoNotFoundException;
-use Whirlwind\Middleware\OAuth\Infrastructure\Oauth\TokenInfo;
 use Whirlwind\Infrastructure\Repository\Rest\Repository;
 
 class TokenInfoRepository extends Repository

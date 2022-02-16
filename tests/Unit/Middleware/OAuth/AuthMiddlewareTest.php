@@ -7,11 +7,11 @@ use Laminas\Diactoros\ServerRequestFactory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Whirlwind\Middleware\OAuth\AuthMiddleware;
-use Whirlwind\Middleware\OAuth\Infrastructure\Oauth\Exception\TokenInfoNotFoundException;
-use Whirlwind\Middleware\OAuth\Infrastructure\Oauth\TokenInfo;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ClientException;
-use Whirlwind\Middleware\OAuth\Infrastructure\Repository\TokenInfoRepository;
+use Whirlwind\Middleware\OAuth\AuthMiddleware;
+use Whirlwind\Middleware\OAuth\TokenInfo;
+use Whirlwind\Middleware\OAuth\TokenInfoNotFoundException;
+use Whirlwind\Middleware\OAuth\TokenInfoRepository;
 
 class AuthMiddlewareTest extends TestCase
 {

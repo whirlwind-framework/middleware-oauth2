@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Whirlwind\Middleware\OAuth\Infrastructure\Oauth;
+namespace Whirlwind\Middleware\OAuth;
 
 final class TokenInfo
 {

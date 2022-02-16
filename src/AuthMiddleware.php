@@ -9,11 +9,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Whirlwind\Middleware\OAuth\Infrastructure\Oauth\Exception\TokenInfoNotFoundException;
-use Whirlwind\Middleware\OAuth\Infrastructure\Oauth\TokenInfo;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ClientException;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ServerException;
-use Whirlwind\Middleware\OAuth\Infrastructure\Repository\TokenInfoRepository;
 
 final class AuthMiddleware implements MiddlewareInterface
 {
