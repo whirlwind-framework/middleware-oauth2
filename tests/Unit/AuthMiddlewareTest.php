@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\Unit\Middleware\OAuth;
+namespace Test\Unit;
 
 use Laminas\Diactoros\ResponseFactory;
 use Laminas\Diactoros\ServerRequestFactory;
