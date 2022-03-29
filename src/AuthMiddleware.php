@@ -9,23 +9,18 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Whirlwind\Infrastructure\Http\Exception\ForbiddenHttpException;
+use Whirlwind\Infrastructure\Http\Exception\UnauthorizedException;
 use Whirlwind\Infrastructure\Http\Exception\HttpException;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ClientException;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ServerException;
-use Whirlwind\Middleware\OAuth\Exception\UnauthorizedException;
 
 final class AuthMiddleware implements MiddlewareInterface
 {
     private array $scopes = [];
     private TokenInfoRepository $tokenInfoRepository;
-    private string $tokenKey;
 
-    public function __construct(
-        TokenInfoRepository $tokenInfoRepository,
-        string $tokenKey = 'access_token'
-    ) {
+    public function __construct(TokenInfoRepository $tokenInfoRepository) {
         $this->tokenInfoRepository = $tokenInfoRepository;
-        $this->tokenKey = $tokenKey;
     }
 
     public function withRequiredScopes(array $scopes): self
@@ -48,8 +43,8 @@ final class AuthMiddleware implements MiddlewareInterface
                 $tokenInfo = $this->tokenInfoRepository->findByAuthorizationHeader($header);
             } else {
                 $token = 'get' === \strtolower($request->getMethod())
-                    ? ($request->getQueryParams()[$this->tokenKey] ?? '')
-                    : ($request->getParsedBody()[$this->tokenKey] ?? '');
+                    ? ($request->getQueryParams()['access_token'] ?? '')
+                    : ($request->getParsedBody()['access_token'] ?? '');
                 $tokenInfo =  $this->tokenInfoRepository->findByAccessToken($token);
             }
         } catch (ClientException | ServerException $e) {
