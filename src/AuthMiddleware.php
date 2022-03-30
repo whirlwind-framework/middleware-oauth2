@@ -14,7 +14,7 @@ use Whirlwind\Infrastructure\Http\Exception\HttpException;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ClientException;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ServerException;
 
-final class AuthMiddleware implements MiddlewareInterface
+class AuthMiddleware implements MiddlewareInterface
 {
     private array $scopes = [];
     private TokenInfoRepository $tokenInfoRepository;
@@ -33,7 +33,7 @@ final class AuthMiddleware implements MiddlewareInterface
 
     private function formatScopes(array $scopes): array
     {
-        return array_map(static fn ($scope) => \strtolower($scope), $scopes);
+        return \array_map(static fn ($scope) => \strtolower($scope), $scopes);
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -60,7 +60,7 @@ final class AuthMiddleware implements MiddlewareInterface
             throw new ForbiddenHttpException('Forbidden');
         }
 
-        return $handler->handle($request->withAttribute('user', $tokenInfo));
+        return $handler->handle($request->withAttribute('oauth2-token-info', $tokenInfo));
     }
 
     private function isScopesValid(TokenInfo $tokenInfo): bool
