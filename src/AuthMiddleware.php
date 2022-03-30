@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Whirlwind\Middleware\OAuth;
 
-use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Whirlwind\Infrastructure\Http\Exception\ForbiddenHttpException;
+use Whirlwind\Infrastructure\Http\Exception\UnauthorizedException;
+use Whirlwind\Infrastructure\Http\Exception\HttpException;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ClientException;
 use Whirlwind\Infrastructure\Repository\Rest\Exception\ServerException;
 
@@ -16,13 +18,8 @@ final class AuthMiddleware implements MiddlewareInterface
 {
     private array $scopes = [];
     private TokenInfoRepository $tokenInfoRepository;
-    private ResponseFactoryInterface $responseFactory;
 
-    public function __construct(
-        TokenInfoRepository $tokenInfoRepository,
-        ResponseFactoryInterface $responseFactory
-    ) {
-        $this->responseFactory = $responseFactory;
+    public function __construct(TokenInfoRepository $tokenInfoRepository) {
         $this->tokenInfoRepository = $tokenInfoRepository;
     }
 
@@ -41,54 +38,29 @@ final class AuthMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $tokenHeader = $this->getTokenHeader($request);
-
-        if ($tokenHeader === '') {
-            return $this->responseFactory->createResponse(401);
-        }
-
         try {
-            $tokenInfo = $this->tokenInfoRepository->findByAuthorizationHeader($tokenHeader);
+            if ($header = $request->getHeaderLine('Authorization')) {
+                $tokenInfo = $this->tokenInfoRepository->findByAuthorizationHeader($header);
+            } else {
+                $token = 'get' === \strtolower($request->getMethod())
+                    ? ($request->getQueryParams()['access_token'] ?? '')
+                    : ($request->getParsedBody()['access_token'] ?? '');
+                $tokenInfo =  $this->tokenInfoRepository->findByAccessToken($token);
+            }
         } catch (ClientException | ServerException $e) {
-            return $this->responseFactory->createResponse(
+            throw new HttpException(
                 $e->getHttpCode(),
                 \str_replace(["\n","\r"], '', $e->getMessage())
             );
-        } catch (TokenInfoNotFoundException $e) {
-            return $this->responseFactory->createResponse(
-                404,
-                \str_replace(["\n","\r"], '', $e->getMessage())
-            );
+        } catch (\Throwable $e) {
+            throw new UnauthorizedException($e->getMessage());
         }
 
         if (!$this->isScopesValid($tokenInfo)) {
-            return $this->responseFactory->createResponse(403);
+            throw new ForbiddenHttpException('Forbidden');
         }
 
-        return $handler->handle($request);
-    }
-
-    private function getTokenHeader(ServerRequestInterface $request): string
-    {
-        $tokenHeader = $request->getHeaderLine('Authorization');
-
-        if ($tokenHeader !== '') {
-            return $tokenHeader;
-        }
-
-        $tokenHeader = $request->getQueryParams()['access_token'] ?? '';
-
-        if ($tokenHeader !== '') {
-            return 'Bearer ' . $tokenHeader;
-        }
-
-        $tokenHeader = $request->getParsedBody()['access_token'] ?? '';
-
-        if ($tokenHeader !== '') {
-            return 'Bearer ' . $tokenHeader;
-        }
-
-        return '';
+        return $handler->handle($request->withAttribute('user', $tokenInfo));
     }
 
     private function isScopesValid(TokenInfo $tokenInfo): bool
